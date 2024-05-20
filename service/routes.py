@@ -5,10 +5,11 @@ This microservice handles the lifecycle of Accounts
 """
 # pylint: disable=unused-import
 from flask import jsonify, request, make_response, abort, url_for   # noqa; F401
-from service.models import Account
+from service.models import Account, db
 from service.common import status  # HTTP Status Codes
 from . import app  # Import Flask application
 
+BASE_URL = "/accounts"
 
 ############################################################
 # Health Endpoint
@@ -17,7 +18,6 @@ from . import app  # Import Flask application
 def health():
     """Health Status"""
     return jsonify(dict(status="OK")), status.HTTP_200_OK
-
 
 ######################################################################
 # GET INDEX
@@ -33,7 +33,6 @@ def index():
         ),
         status.HTTP_200_OK,
     )
-
 
 ######################################################################
 # CREATE A NEW ACCOUNT
@@ -60,13 +59,8 @@ def create_accounts():
 ######################################################################
 # LIST ALL ACCOUNTS
 ######################################################################
+# ... place your code here to LIST accounts ...
 
-# ... place you code here to LIST accounts ...
-
-
-######################################################################
-# READ AN ACCOUNT
-######################################################################
 ######################################################################
 # READ AN ACCOUNT
 ######################################################################
@@ -82,27 +76,36 @@ def get_accounts(account_id):
     if not account:
         abort(status.HTTP_404_NOT_FOUND, f"Account with id [{account_id}] could not be found.")
 
-    return account.serialize(), status.HTTP_200_OK
-# ... place you code here to READ an account ...
+    return jsonify(account.serialize()), status.HTTP_200_OK
+    # ... place your code here to READ an account ...
 
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
+@app.route("/accounts/<int:id>", methods=["PUT"])
+def update_account(id):
+    account = Account.query.get(id)
+    if not account:
+        return jsonify(message="Account not found"), status.HTTP_404_NOT_FOUND
 
-# ... place you code here to UPDATE an account ...
+    data = request.get_json()
+    account.name = data.get('name', account.name)
+    account.email = data.get('email', account.email)
+    account.address = data.get('address', account.address)
+    account.phone_number = data.get('phone_number', account.phone_number)
 
+    db.session.commit()
+    return jsonify(account.serialize()), status.HTTP_200_OK
+    # ... place your code here to UPDATE an account ...
 
 ######################################################################
 # DELETE AN ACCOUNT
 ######################################################################
-
-# ... place you code here to DELETE an account ...
-
+# ... place your code here to DELETE an account ...
 
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
 
 def check_content_type(media_type):
     """Checks that the media type is correct"""

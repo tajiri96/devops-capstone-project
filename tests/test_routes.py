@@ -7,12 +7,14 @@ Test cases can be run with the following:
 """
 import os
 import logging
+import unittest
 from unittest import TestCase
 from tests.factories import AccountFactory
 from service.common import status  # HTTP Status Codes
 from service.models import db, Account, init_db
 from service.routes import app
 
+BASE_URL = "/accounts"
 DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
 )
@@ -82,7 +84,7 @@ class TestAccountService(TestCase):
     def test_health(self):
         """It should be healthy"""
         resp = self.client.get("/health")
-        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
         data = resp.get_json()
         self.assertEqual(data["status"], "OK")
 
@@ -123,7 +125,6 @@ class TestAccountService(TestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_415_UNSUPPORTED_MEDIA_TYPE)
 
-    # ADD YOUR TEST CASES HERE ...
     def test_get_account(self):
         """It should Read a single Account"""
         account = self._create_accounts(1)[0]
@@ -138,3 +139,37 @@ class TestAccountService(TestCase):
         """It should not Read an Account that is not found"""
         resp = self.client.get(f"{BASE_URL}/0")
         self.assertEqual(resp.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_update_account(self):
+        """It should Update an existing Account"""
+        # Create a test account
+        account = Account(name="Test Account", email="test@example.com")
+        db.session.add(account)
+        db.session.commit()
+
+        # Update the account
+        updated_data = {
+            "name": "Updated Name",
+            "email": "updated_email@example.com",
+            "address": "Updated Address",
+            "phone_number": "9876543210"
+        }
+
+        response = self.client.put(
+            f"{BASE_URL}/{account.id}",
+            json=updated_data,
+            content_type="application/json"
+        )
+
+        # Check the response
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_account = Account.query.get(account.id)
+        self.assertEqual(updated_account.name, updated_data["name"])
+        self.assertEqual(updated_account.email, updated_data["email"])
+        self.assertEqual(updated_account.address, updated_data["address"])
+        self.assertEqual(updated_account.phone_number, updated_data["phone_number"])
+
+
+if __name__ == "__main__":
+    unittest.main()
+
