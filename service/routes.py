@@ -11,7 +11,6 @@ from . import app  # Import Flask application
 
 BASE_URL = "/accounts"
 
-
 ############################################################
 # Health Endpoint
 ############################################################
@@ -71,7 +70,7 @@ def list_accounts():
 
     accounts = Account.all()
     account_list = [account.serialize() for account in accounts]
-    
+
     app.logger.info("Returning [%s] accounts", len(account_list))
     return jsonify(account_list), status.HTTP_200_OK
 
@@ -111,7 +110,7 @@ def update_accounts(account_id):
 
     account.deserialize(request.get_json())
     account.update()
-    
+
     return jsonify(account.serialize()), status.HTTP_200_OK
 
 
@@ -135,7 +134,6 @@ def delete_accounts(account_id):
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-@app.route("/accounts/<int:account_id>", methods=["PUT"])
 def check_content_type(media_type):
     """Checks that the media type is correct"""
     content_type = request.headers.get("Content-Type")
