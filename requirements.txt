@@ -27,3 +27,10 @@ coverage==6.3.2
 
 # Utilities
 httpie==3.2.1
+
+# Add Flask-Talisman
+flask
+flask_talisman
+
+#Add Flask-Cors
+Flask-Cors>=3.0.0
