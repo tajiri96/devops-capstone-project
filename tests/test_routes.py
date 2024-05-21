@@ -19,8 +19,6 @@ DATABASE_URI = os.getenv(
     "DATABASE_URI", "postgresql://postgres:postgres@localhost:5432/postgres"
 )
 
-BASE_URL = "/accounts"
-
 
 ######################################################################
 #  T E S T   C A S E S
@@ -39,7 +37,8 @@ class TestAccountService(TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        """Runs once before test suite"""
+        """Runs once after all tests"""
+        pass
 
     def setUp(self):
         """Runs before each test"""
@@ -146,36 +145,46 @@ class TestAccountService(TestCase):
         resp = self.client.delete(f"{BASE_URL}/{account.id}")
         self.assertEqual(resp.status_code, status.HTTP_204_NO_CONTENT)
 
+    def test_get_account_list(self):
+        """It should Get a list of Accounts"""
+        self._create_accounts(5)
+        resp = self.client.get(BASE_URL)
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
+        data = resp.get_json()
+        self.assertEqual(len(data), 5)
+
     def test_update_account(self):
         """It should Update an existing Account"""
         # Create a test account
-        account = Account(name="Test Account", email="test@example.com")
-        db.session.add(account)
-        db.session.commit()
+        account = AccountFactory()
+        response = self.client.post(
+            BASE_URL,
+            json=account.serialize(),
+            content_type="application/json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        new_account = response.get_json()
 
         # Update the account
-        updated_data = {
-            "name": "Updated Name",
-            "email": "updated_email@example.com",
-            "address": "Updated Address",
-            "phone_number": "9876543210"
-        }
+        new_account["name"] = "Updated Name"
+        new_account["email"] = "updated_email@example.com"
+        new_account["address"] = "Updated Address"
+        new_account["phone_number"] = "9876543210"
 
         response = self.client.put(
-            f"{BASE_URL}/{account.id}",
-            json=updated_data,
+            f"{BASE_URL}/{new_account['id']}",
+            json=new_account,
             content_type="application/json"
         )
 
         # Check the response
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        updated_account = Account.query.get(account.id)
-        self.assertEqual(updated_account.name, updated_data["name"])
-        self.assertEqual(updated_account.email, updated_data["email"])
-        self.assertEqual(updated_account.address, updated_data["address"])
-        self.assertEqual(updated_account.phone_number, updated_data["phone_number"])
+        updated_account = response.get_json()
+        self.assertEqual(updated_account["name"], "Updated Name")
+        self.assertEqual(updated_account["email"], "updated_email@example.com")
+        self.assertEqual(updated_account["address"], "Updated Address")
+        self.assertEqual(updated_account["phone_number"], "9876543210")
 
 
 if __name__ == "__main__":
     unittest.main()
-
