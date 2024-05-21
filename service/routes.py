@@ -11,6 +11,7 @@ from . import app  # Import Flask application
 
 BASE_URL = "/accounts"
 
+
 ############################################################
 # Health Endpoint
 ############################################################
@@ -143,4 +144,5 @@ def check_content_type(media_type):
     abort(
         status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
         f"Content-Type must be {media_type}",
+        
     )
