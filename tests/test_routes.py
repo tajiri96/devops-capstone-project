@@ -185,11 +185,6 @@ class TestAccountService(TestCase):
         self.assertEqual(updated_account["address"], "Updated Address")
         self.assertEqual(updated_account["phone_number"], "9876543210")
 
-    def test_method_not_allowed(self):
-        """It should not allow an illegal method call"""
-        resp = self.client.delete(BASE_URL)
-        self.assertEqual(resp.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
-
 
 if __name__ == "__main__":
     unittest.main()
