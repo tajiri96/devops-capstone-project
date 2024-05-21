@@ -5,11 +5,12 @@ This microservice handles the lifecycle of Accounts
 """
 # pylint: disable=unused-import
 from flask import jsonify, request, make_response, abort, url_for   # noqa: F401
-from service.models import Account, db
+from service.models import Account
 from service.common import status  # HTTP Status Codes
 from . import app  # Import Flask application
 
 BASE_URL = "/accounts"
+
 
 ############################################################
 # Health Endpoint
@@ -18,6 +19,7 @@ BASE_URL = "/accounts"
 def health():
     """Health Status"""
     return jsonify(dict(status="OK")), status.HTTP_200_OK
+
 
 ######################################################################
 # GET INDEX
@@ -33,6 +35,7 @@ def index():
         ),
         status.HTTP_200_OK,
     )
+
 
 ######################################################################
 # CREATE A NEW ACCOUNT
@@ -54,6 +57,7 @@ def create_accounts():
         jsonify(message), status.HTTP_201_CREATED, {"Location": location_url}
     )
 
+
 ######################################################################
 # LIST ALL ACCOUNTS
 ######################################################################
@@ -67,9 +71,10 @@ def list_accounts():
 
     accounts = Account.all()
     account_list = [account.serialize() for account in accounts]
-    
+
     app.logger.info("Returning [%s] accounts", len(account_list))
     return jsonify(account_list), status.HTTP_200_OK
+
 
 ######################################################################
 # READ AN ACCOUNT
@@ -88,6 +93,7 @@ def get_accounts(account_id):
 
     return jsonify(account.serialize()), status.HTTP_200_OK
 
+
 ######################################################################
 # UPDATE AN EXISTING ACCOUNT
 ######################################################################
@@ -105,8 +111,9 @@ def update_accounts(account_id):
 
     account.deserialize(request.get_json())
     account.update()
-    
+
     return jsonify(account.serialize()), status.HTTP_200_OK
+
 
 ######################################################################
 # DELETE AN ACCOUNT
@@ -124,10 +131,10 @@ def delete_accounts(account_id):
     account.delete()
     return "", status.HTTP_204_NO_CONTENT
 
+
 ######################################################################
 #  U T I L I T Y   F U N C T I O N S
 ######################################################################
-
 def check_content_type(media_type):
     """Checks that the media type is correct"""
     content_type = request.headers.get("Content-Type")
